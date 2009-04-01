@@ -1,5 +1,5 @@
 //--Includes------------------------------------------------------------|
-
+include "project1.prg"
 //--End-----------------------------------------------------------------|
 
 //--Declarations--------------------------------------------------------|
@@ -10,7 +10,7 @@
 Const
 	VERSION = "0.1";
 	SCREEN_X = 800;
-	SCREEN_Y = 600;
+	SCREEN_Y = 480;
 	SCREEN_BPP = 16;
 	OPT_FPS = 60;
 	
@@ -24,8 +24,10 @@ Const
 	KEY_D = 8;
 	KEY_START = 9;
 	KEY_EXIT = 10;
+	KEY_BACK = 11;
+	KEY_NEXT = 12;
 	
-	KEYS = 10;
+	KEYS = 12;
 	PLAYER_1 = 1;
 	PLAYERS = 1;
 End
@@ -40,135 +42,120 @@ End
 //--Main----------------------------------------------------------------|
 Process Main()
 Begin
+	//Set the scale mode
+	SCALE_MODE = SCALE_NONE;
+	
+	//Initialize the randomizer.
 	rand_seed( get_timer() + ( time() % 1000) * 1000 );
+	
+	//Set the resolution
 	set_mode(SCREEN_X, SCREEN_Y, SCREEN_BPP);
+	
+	//Set the frames_per_second
 	set_fps(OPT_FPS, 0);
+	
+	//Set window-title
 	set_title("TROLLET MiniGames Project v" + VERSION);
+	
+	//Center the window to the user's desktop, whatever resolution s/he uses
 	get_desktop_size(&x, &y);
 	set_window_pos( (x/2) - (SCREEN_X / 2), (y/2) - (SCREEN_Y / 2) );
+	
+	//Set the default key configuration, TODO: Make customizable
 	configure_keys();
-	menu();
+	
+	//Lauch the graphical selector
+	gMenu();
 End
 //--End-----------------------------------------------------------------|
 
-//--Menu----------------------------------------------------------------|
-Process menu()
+//--Graphical-Menu------------------------------------------------------|
+Process gMenu()
 Private
 	int i;
 	int sel = 0;
 	int opt = 0;
 	int opt_id;
 	int txt[100];
+	int draw[100];
 	string game_name[100];
-	
 	int counterTime;
 	int keyPress;
+	int pic;
 Begin
+	//Kill your father :(
 	signal(father, s_kill);
-	game_name[opt_id++] = "TROLLET v0.0.1";
-	game_name[opt_id++] = "TROLLET v0.0.2";
-	game_name[opt_id++] = "TROLLET v0.0.3";
-	game_name[opt_id++] = "TROLLET v0.0.4";
-	game_name[opt_id++] = "TROLLET v0.0.5";
-	game_name[opt_id++] = "TROLLET v0.0.6";
-	game_name[opt_id++] = "TROLLET II";
-	game_name[opt_id++] = "TROLLET III";
-	game_name[opt_id++] = "TROLLET IV";
-	game_name[opt_id++] = "TROLLET HD";
-	game_name[opt_id++] = "Exit";
 	
-	for(i=0; i < opt_id; i++)
-		txt[i] = write(0, SCREEN_X / 2, 50 + (i * 10), 4, game_name[i]);
-	end;
-	sel = selLine(SCREEN_X / 2, 50);
+	//Load resources
+	pic = load_png("data/0011.png");
 	
-	while(!key(player_key[PLAYER_1][KEY_START]))
-		if(scan_code == 0)
-			counterTime = 0;
-		end;
-		//FS-WIN
-		keyPress = 0;
-		
-		while(scan_code <> 0)
-			keyPress = scan_code;
-			counterTime++;
-			if(counterTime == 10)
-				counterTime--;
-				break;
-			end;
-			frame;
-		end;
-		
-		switch(keyPress)
-			case player_key[PLAYER_1][KEY_UP]:
-				opt--;
-				sel.y -= 10;
-				if(opt < 0)
-					opt = 0;
-					sel.y += 10;
-				end;
-			end;
-			case player_key[PLAYER_1][KEY_DOWN]:
-				opt++;
-				sel.y += 10;
-				if(opt >= opt_id)
-					opt = opt_id - 1;
-					sel.y -= 10;
-				end;
-			end;
-			case player_key[PLAYER_1][KEY_EXIT]:
-				exit("Thanks for playing...");
-			end;
-		end;
-		frame;
-	end;		
+	//Draw the graphical menu, should ALWAYS be present!
+	drawing_color(rgb(52,101,164));
+	drawing_z(1000);
+	draw_box(0, SCREEN_Y - 49, SCREEN_X, SCREEN_Y);
+	draw_box(0, 0, SCREEN_X, 49);
+	drawing_color(rgb(255,255,255));
+	draw_line(0, SCREEN_Y - 50, SCREEN_X, SCREEN_Y - 50);
+	draw_line(0, 50, SCREEN_X, 50);
+	
+	//Draw the lines across the screen	
+	draw[1] = draw_line(0, 240, SCREEN_X, 240);
+	draw[2] = draw_line(SCREEN_X / 2, 0, SCREEN_X / 2, SCREEN_Y);
 
-	for(i=0; i < opt_id; i++)
-		delete_text(txt[i]);
-	end;
-		
-	while(key(player_key[PLAYER_1][KEY_START]))
+	//Placeholders, not in used once all previews are present, should be removed.
+/*
+	drawing_color(rgb(117,7,7));
+	draw_box(0, 0, SCREEN_X / 2, SCREEN_Y / 2);
+	drawing_color(rgb(7,116,7));
+	draw_box(SCREEN_X / 2, 0, SCREEN_X, SCREEN_Y / 2);
+	drawing_color(rgb(7,7,116));
+	draw_box(0, SCREEN_Y / 2, SCREEN_X / 2, SCREEN_Y);
+	drawing_color(rgb(117,117,7));
+	draw_box(SCREEN_X / 2, SCREEN_Y / 2, SCREEN_X, SCREEN_Y);
+*/	
+	//Enlarged Title Text
+	x = SCREEN_X / 2;
+	y = 20;
+	size_x = 300;
+	size_y = 300;
+	graph = write_in_map(0, "TROLLET MiniGames Project", 4);
+
+	//Text that should always be visible
+	write(0, SCREEN_X / 2, SCREEN_Y - 30, 4, "[A] - TROLLET v0.0.1  |  [B] - TROLLET v0.0.2  | [C] - TROLLET v0.0.3  |  [D] - TROLLET v0.0.4");
+	write(0, SCREEN_X / 2, SCREEN_Y - 15, 4, " [F1] - PREVIOUS PAGE  |  [F2] - NEXT PAGE");
+	
+	//Text that should only be visible in the selector (first page)
+	txt[0] = write(0, SCREEN_X / 4, SCREEN_Y / 4 + 25, 4, "[PLACEHOLDER v0.0.1]");
+	txt[1] = write(0, SCREEN_X / 2 + SCREEN_X / 4, SCREEN_Y / 2 - SCREEN_Y / 4 + 25, 4, "[PLACEHOLDER v0.0.2]");
+	txt[2] = write(0, SCREEN_X / 2 + SCREEN_X / 4, SCREEN_Y / 2 + SCREEN_Y / 4 - 25, 4, "[PLACEHOLDER v0.0.4]");
+	txt[3] = write(0, SCREEN_X / 4, SCREEN_Y / 4 + SCREEN_Y / 2 - 25, 4, "[PLACEHOLDER v0.0.3]");
+	
+	//This is the previews
+	put(0, pic, 190, 190);
+	put(0, pic, SCREEN_X-60, 190);
+	put(0, pic, SCREEN_X-50, 0);
+	put(0, pic, 50, 0);
+	
+	//Delete the lines separating the previews
+	delete_draw(draw[1]);
+	delete_draw(draw[2]);
+	
+	//main-loop	
+	Loop
+		//Delete the selector-text and start the game
+		if(key(player_key[PLAYER_1][KEY_D]))
+			for(i=0; i<=3; i++)
+				delete_text(txt[i]);
+			end
+			TWIP_Main();
+		end
 		frame;
-	end;
-	let_me_alone();
-	i = 0;
-		
-	switch(opt)
-		case i++:
-			//T001
-		end;
-		case i++:
-			//T002
-		end;
-		case i++:
-			//T003
-		end;
-		case i++:
-			//T004
-		end;
-		case i++:
-			//T005
-		end;
-		case i++:
-			//T006
-		end;
-		case i++:
-			//T2
-		end;
-		case i++:
-			//T3
-		end;
-		case i++:
-			//T4
-		end;
-		case i++:
-			//THD
-		end;
-	end;
+	end
 End
 //--End-----------------------------------------------------------------|
 
 //--Selected-Line-------------------------------------------------------|
+/* Useful function to select a line, but currently not in use */
 Process SelLine(int x, int y)
 Begin
 	graph = new_map(200, 10, SCREEN_BPP);
@@ -193,5 +180,7 @@ Begin
 	player_key[PLAYER_1][KEY_D] = _space;
 	player_key[PLAYER_1][KEY_START] = _enter;
 	player_key[PLAYER_1][KEY_EXIT] = _esc;
+	player_key[PLAYER_1][KEY_BACK] = _F1;
+	player_key[PLAYER_1][KEY_NEXT] = _F2;
 End
 //--End-----------------------------------------------------------------|
